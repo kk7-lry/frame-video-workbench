@@ -2,7 +2,7 @@
 
 ## Current Run: 2026-09-10
 
-- 80 backend tests and eight frontend state tests passed, no skips/failures.
+- 80 backend tests and nine frontend state tests passed, no skips/failures.
 - Static frontend check passed with 100 unique element/icon IDs.
 - Real browser on local public mode: uploaded 92,979-byte MP4, decoded and
   played 640x480 video (2.020113 seconds), saved `sample.mp4` without a browser
@@ -39,6 +39,15 @@
 - Windows thumbnail generation returned E_INVALIDARG on a real MP4 that
   played in the browser. That specific thumbnail-only failure now preserves
   the source with validation `unavailable`; corrupt tracks remain rejected.
+- Final block-mode OCR produced both lines correctly on the public server:
+  `把视频变成可用素材` and `这是一次本地文字识别测试`.
+- Public edited text survived reload and exported as a TXT file. Repeated
+  paste reused the downloaded video. Latest 390px screenshot had no horizontal
+  overflow; browser logs contained lazy-image informational notices only.
+- Final billing check still showed Hobby, no card and $0.00 accrued/projected.
+  Health endpoint confirmed deployed build `e2238c7`; subsequent changes
+  correct public save/download/connection labels and select only available
+  automatic extraction services, covered by a frontend regression test.
 
 ## Previous Run
 

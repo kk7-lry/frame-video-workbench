@@ -64,6 +64,13 @@ test('images request OCR only and unchecked automatic extraction stays off',()=>
   assert.deepEqual(h.calls,[{keys:['ocr'],id}]);
 });
 
+test('automatic extraction uses only available services in public mode',()=>{
+  const h=harness();h.app.state.health={public:true,checked:true,speech:false,ocr:true};
+  h.app.state.tasks=[task()];h.app.queueAutoExtract(id);
+  assert.deepEqual(h.calls,[{keys:['ocr'],id}]);
+  assert(!h.app.state.autoPending.has(id));
+});
+
 for(const entry of ['current','list'])test(`${entry} retry waits for stale polling before preserving automatic work`,async()=>{
   const h=harness(),failed=task({status:'失败',mediaUrl:null}),queued=task({status:'排队中',mediaUrl:null});
   h.app.state.tasks=[failed];h.app.state.current=id;
