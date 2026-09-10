@@ -82,7 +82,7 @@ def browse(video_id):
     from playwright.sync_api import sync_playwright
 
     found = []
-    diagnostic = {'detailResponses': 0, 'phase': 'launch'}
+    diagnostic = {'detailResponses': 0, 'phase': 'launch', 'requests': 0, 'scripts': 0}
     validated = set()
     deadline = time.monotonic() + 45
     with sync_playwright() as playwright:
@@ -94,12 +94,13 @@ def browse(video_id):
             options['channel'] = 'msedge'
         browser = playwright.chromium.launch(**options)
         try:
-            context = browser.new_context(locale='zh-CN', service_workers='block',
+            context = browser.new_context(locale='zh-CN', service_workers='block', user_agent=link_resolver.DESKTOP_UA,
                                           viewport={'width': 1280, 'height': 720}, accept_downloads=False)
             context.route_web_socket('**/*', lambda route: route.close())
 
             def route_request(route):
                 request = route.request
+                diagnostic['requests'] += 1
                 try:
                     if time.monotonic() > deadline or not allowed_request(request.url, request.resource_type):
                         return route.abort()
@@ -120,6 +121,10 @@ def browse(video_id):
 
             def response_seen(response):
                 parts = urlsplit(response.url)
+                if response.request.resource_type == 'document':
+                    diagnostic['documentStatus'] = response.status
+                if response.request.resource_type == 'script':
+                    diagnostic['scripts'] += 1
                 if parts.hostname != 'www.douyin.com' or parts.path != '/aweme/v1/web/aweme/detail/':
                     return
                 diagnostic['detailResponses'] += 1
@@ -138,12 +143,13 @@ def browse(video_id):
             page.on('response', response_seen)
             try:
                 page.goto('https://www.douyin.com/video/' + video_id,
-                          wait_until='domcontentloaded', timeout=25000)
-                diagnostic['phase'] = 'wait-detail'
-                while not found and time.monotonic() < deadline:
-                    page.wait_for_timeout(250)
+                          wait_until='commit', timeout=20000)
             except Exception as error:
                 diagnostic['error'] = str(error).splitlines()[0][:180]
+            diagnostic['phase'] = 'wait-detail'
+            with contextlib.suppress(Exception):
+                while not found and time.monotonic() < deadline:
+                    page.wait_for_timeout(250)
             if found:
                 return found[0]
             with contextlib.suppress(Exception):
