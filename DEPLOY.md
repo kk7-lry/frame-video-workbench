@@ -66,11 +66,14 @@ response. It blocks media, images, fonts, stylesheets, WebSockets and hosts
 outside the platform resource allowlist, and checks resource DNS addresses.
 Unlike the media downloader, Chromium performs its own final DNS connection;
 the allowlist therefore only includes platform-controlled domains. Each
-attempt has a 45-second page deadline and a 65-second subprocess limit.
+attempt has a 90-second page deadline and a 110-second subprocess limit.
 On Linux the timeout kills the process group, including Chromium children.
 The single existing worker bounds concurrency to one browser attempt. No
 visitor browser cookies, shared login or paid parsing service are used.
 Set `FRAME_BROWSER=0` to disable the fallback on a constrained host.
+For a Windows local preview, install `requirements.txt`, keep Microsoft Edge
+installed, and set `FRAME_BROWSER=1` in the process environment before starting
+the server. The browser fallback is optional outside the Docker image.
 
 ## Local Public-Mode Preview
 

@@ -5,8 +5,39 @@
 - Follow-up: the user supplied `https://v.douyin.com/aIT_UPmda4E/`, video ID
   `7681497975500538874`. A fresh anonymous headless Edge context received the
   official detail response with the expected title and duration 77.5 seconds.
-  Added an opt-in isolated Chromium fallback. Cloud download acceptance for
-  this fallback is pending; earlier tests below describe the previous build.
+  Added an opt-in isolated Chromium fallback. The three additional samples
+  copied from actual Douyin Share menus also downloaded and played locally.
+  All four now pass cloud download, browser playback sampling and file saving
+  on build `ca70b156b73b0f06245e260b2bef5afdd5453023`. Regression coverage now
+  comprises 86 backend tests plus nine frontend state tests. Earlier bullets
+  below describe previous builds and are retained as historical evidence.
+
+| Sample | Video ID | Bytes | Browser playback | Public result |
+| --- | --- | ---: | --- | --- |
+| User link, aIT_UPmda4E | 7681497975500538874 | 49120337 | 1920x1080, 77.5 s | Saved |
+| Share menu, 1-9c83zg8V0 | 7681684498967201664 | 20354922 | 2756x1900, 38.12 s | Saved |
+| Share menu, TFA1kFccfgI | 7679346552897789412 | 2649456 | 1280x720, 12.98 s | Saved |
+| Share menu, 69nV3mUxsgU | 7653046675086855823 | 13797596 | 1920x1080, 50.53 s | Saved |
+
+- The additional samples have different authors: 是芝士, GTI机密档案, and
+  侍白（三角洲行动）. Official Share > Copy link supplied full share text.
+- The first cloud run failed for all four. Diagnostics showed that the Free
+  instance loaded the page and scripts but needed longer to return detail
+  data. The final page deadline is 90 seconds, subprocess deadline 110 seconds.
+  No paid compute or third-party parsing service was added.
+- All final downloads used the exact requested video ID. Browser playback
+  advanced and actual files saved without download errors. Three files passed
+  Linux first/last-frame checks; the 2756x1900 sample returned validation
+  unavailable but played and saved in the browser. This is not a full-frame
+  playback/audio or watermark-removal certification.
+- First standalone cloud sample completed in 86 seconds; the user sample in
+  96 seconds. The next two queued samples completed 202 and 287 seconds after
+  submission. Simultaneous submissions therefore require patience.
+- Re-pasting full share text kept four tasks. Another visitor saw zero tasks
+  and HTTP 404 for private media. Final 390px layout had no horizontal overflow.
+- Downloaded user and 13-second files match the local source byte-for-byte
+  (SHA-256). Source files, browser state and downloaded videos are excluded
+  from the release package and repository.
 
 - 80 backend tests and nine frontend state tests passed, no skips/failures.
 - Static frontend check passed with 100 unique element/icon IDs.
