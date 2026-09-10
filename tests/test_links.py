@@ -225,6 +225,28 @@ class DownloadContracts(unittest.TestCase):
             self.assertAlmostEqual(task['duration'],2.02,places=2)
             self.assertEqual(task['validation']['decodedFrames'],2)
 
+    def test_anonymous_browser_recovers_missing_douyin_page_data(self):
+        url='https://www.douyin.com/video/123'
+        data=MP4_SAMPLE.read_bytes()
+        info={'id':'123','title':'browser title','description':'platform caption',
+              'resolver':'douyin-browser','formats':[{'url':'https://cdn.example.com/123.mp4','ext':'mp4','protocol':'https'}]}
+        task=app.new_task('link','pending','抖音',url)
+        app.save(task['id'],caption=app.result('已编辑','my edit',edited=True))
+        with mock.patch.object(app.link_resolver,'inspect_link',return_value=({'formats':[]},url)), \
+                mock.patch.object(app.browser_resolver,'enabled',return_value=True), \
+                mock.patch.object(app.browser_resolver,'resolve',return_value=info) as browser, \
+                mock.patch.object(app,'external_url'), \
+                mock.patch.object(app.requests.OpenerDirector,'open',return_value=Response(data,url,'video/mp4')), \
+                mock.patch.object(app,'locate_ytdlp') as ytdlp:
+            app.run_download(task['id'])
+        final=app.fetch_task(task['id'])
+        self.assertEqual(final['status'],'已就绪')
+        self.assertEqual(final['caption']['text'],'my edit')
+        self.assertEqual(final['resolver'],'douyin-browser')
+        self.assertEqual(app.safe_media_path(final['filename']).read_bytes(),data)
+        browser.assert_called_once_with(url)
+        ytdlp.assert_not_called()
+
     @unittest.skipUnless(app.os.name=='nt','Windows media decoder is required')
     def test_corrupt_mp4_with_matching_length_never_becomes_ready(self):
         source='https://cdn.example.com/corrupt.mp4'

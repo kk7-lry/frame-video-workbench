@@ -54,7 +54,7 @@ def resolve(url):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                text=True, encoding='utf-8', **options)
     try:
-        output, _ = process.communicate(timeout=65)
+        output, _ = process.communicate(timeout=110)
     except subprocess.TimeoutExpired:
         if os.name != 'nt':
             with contextlib.suppress(ProcessLookupError):
@@ -82,9 +82,10 @@ def browse(video_id):
     from playwright.sync_api import sync_playwright
 
     found = []
-    diagnostic = {'detailResponses': 0, 'phase': 'launch', 'requests': 0, 'scripts': 0}
+    diagnostic = {'detailResponses': 0, 'phase': 'launch', 'requests': 0, 'scripts': 0,
+                  'blockedScriptHosts': [], 'pageErrors': []}
     validated = set()
-    deadline = time.monotonic() + 45
+    deadline = time.monotonic() + 90
     with sync_playwright() as playwright:
         options = {'headless': True, 'timeout': 15000, 'args': [
             '--disable-dev-shm-usage', '--renderer-process-limit=1', '--disable-background-networking']}
@@ -103,6 +104,10 @@ def browse(video_id):
                 diagnostic['requests'] += 1
                 try:
                     if time.monotonic() > deadline or not allowed_request(request.url, request.resource_type):
+                        if request.resource_type == 'script':
+                            blocked = urlsplit(request.url).hostname
+                            if blocked not in diagnostic['blockedScriptHosts']:
+                                diagnostic['blockedScriptHosts'].append(blocked)
                         return route.abort()
                     host = urlsplit(request.url).hostname
                     if host not in validated:
@@ -117,6 +122,8 @@ def browse(video_id):
 
             context.route('**/*', route_request)
             page = context.new_page()
+            page.on('pageerror', lambda error: diagnostic['pageErrors'].append(str(error).splitlines()[0][:120])
+                    if len(diagnostic['pageErrors']) < 3 else None)
             diagnostic['phase'] = 'navigate'
 
             def response_seen(response):
@@ -155,6 +162,7 @@ def browse(video_id):
             with contextlib.suppress(Exception):
                 diagnostic['title'] = page.title()[:100]
                 diagnostic['host'] = urlsplit(page.url).hostname
+                diagnostic['body'] = page.locator('body').inner_text(timeout=2000)[-300:]
             return {'_diagnostic': diagnostic}
         finally:
             browser.close()

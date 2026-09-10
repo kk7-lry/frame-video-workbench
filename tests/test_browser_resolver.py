@@ -42,7 +42,19 @@ class BrowserFallback(unittest.TestCase):
             for output in ('null', 'invalid', '{"id":"999","formats":[{}]}'):
                 child.communicate.return_value=(output, '')
                 self.assertIsNone(resolver.resolve('https://www.douyin.com/video/123'))
-            child.communicate.assert_called_with(timeout=65)
+            child.communicate.assert_called_with(timeout=110)
+
+    def test_linux_deadline_kills_the_entire_browser_process_group(self):
+        with mock.patch.dict(os.environ, {'FRAME_BROWSER': '1'}), mock.patch.object(resolver.os, 'name', 'posix'), \
+                mock.patch.object(resolver.os, 'killpg', create=True) as kill_group, \
+                mock.patch.object(resolver.signal, 'SIGKILL', 9, create=True), \
+                mock.patch.object(resolver.subprocess, 'Popen') as process:
+            child=process.return_value
+            child.pid=3456
+            child.communicate.side_effect=[subprocess.TimeoutExpired('browser', 65), ('', '')]
+            self.assertIsNone(resolver.resolve('https://www.douyin.com/video/123'))
+            kill_group.assert_called_once_with(3456, 9)
+            self.assertEqual(child.communicate.call_count, 2)
 
 
 if __name__ == '__main__':
