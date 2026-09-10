@@ -264,6 +264,13 @@ class DownloadContracts(unittest.TestCase):
         self.assertEqual(list(app.MEDIA.iterdir()),[partial])
         self.assertEqual(partial.read_bytes(),MP4_SAMPLE.read_bytes())
 
+    def test_unsupported_thumbnail_does_not_reject_a_readable_video_track(self):
+        partial=app.MEDIA/'sample.part';partial.write_bytes(MP4_SAMPLE.read_bytes())
+        probe={'ok':False,'reason':'thumbnail_unavailable','stage':'thumbnail','code':-2147024809}
+        with mock.patch.object(app.os,'name','nt'),mock.patch.object(app,'ps_run',return_value=json.dumps(probe)):
+            self.assertEqual(app.validate_video_file(partial,'mp4'),{'state':'unavailable'})
+        self.assertEqual(partial.read_bytes(),MP4_SAMPLE.read_bytes())
+
     def test_truncated_video_never_becomes_ready_and_caption_survives(self):
         url='https://site.example/video';data=b'\x00\x00\x00\x18ftypisom'
         info={'title':'视频','description':'已获取的原文','formats':[{'url':'https://cdn.example.com/a.mp4','ext':'mp4','protocol':'https'}]}

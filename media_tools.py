@@ -38,7 +38,7 @@ def recognize_frames(manifest):
     frames=json.loads(Path(manifest).read_text(encoding='utf-8'))
     output=[]
     for frame in frames:
-        result=subprocess.run(['tesseract',frame['file'],'stdout','-l','chi_sim+eng','--psm','11'],
+        result=subprocess.run(['tesseract',frame['file'],'stdout','-l','chi_sim+eng','--psm','6'],
             capture_output=True,encoding='utf-8',errors='replace',timeout=15)
         if result.returncode: raise RuntimeError('OCR could not decode this frame')
         text=result.stdout.strip()

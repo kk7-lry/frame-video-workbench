@@ -316,6 +316,8 @@ def validate_video_file(partial, ext):
             probe = json.loads(ps_run(['-File', str(ROOT/'native_video.ps1'), str(checking)], timeout=30))
         except (RuntimeError, subprocess.TimeoutExpired, OSError, ValueError):
             return dict(state='unavailable')
+        if isinstance(probe,dict) and probe.get('reason')=='thumbnail_unavailable':
+            return dict(state='unavailable')
         if not isinstance(probe, dict) or not probe.get('ok'):
             raise MediaDownloadError('视频未通过本机播放校验，文件可能损坏或使用了本机不支持的编码。')
         return dict(state='decoded', width=probe['width'], height=probe['height'],
@@ -700,7 +702,8 @@ class Handler(BaseHTTPRequestHandler):
             if path=='/api/health':
                 with LOCK: network=dict(NETWORK)
                 details=dict(ok=True,app='frame-workbench',version=VERSION,**SERVICES,network=network,
-                             download=bool(locate_ytdlp()),retentionHours=24,public=PUBLIC,maxUploadBytes=MAX_UPLOAD)
+                             download=bool(locate_ytdlp()),retentionHours=24,public=PUBLIC,maxUploadBytes=MAX_UPLOAD,
+                             build=os.environ.get('RENDER_GIT_COMMIT','local'))
                 if not PUBLIC: details['workspace']=str(ROOT)
                 return self.respond(200,details)
             if path=='/api/platforms': return self.respond(200,{} if PUBLIC else platform_auth.status(DATA))

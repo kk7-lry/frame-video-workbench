@@ -2,7 +2,7 @@
 
 ## Current Run: 2026-09-10
 
-- 78 backend tests and eight frontend state tests passed, no skips/failures.
+- 80 backend tests and eight frontend state tests passed, no skips/failures.
 - Static frontend check passed with 100 unique element/icon IDs.
 - Real browser on local public mode: uploaded 92,979-byte MP4, decoded and
   played 640x480 video (2.020113 seconds), saved `sample.mp4` without a browser
@@ -15,10 +15,30 @@
 - New public-mode contracts cover independent sessions, private media access,
   cross-site requests, disabled administration, task limits, retention, DNS
   pinning, and portable media-tool output validation.
-- Linux tool tests currently use subprocess fixtures. Real Linux execution
-  and the Docker image still require deployment verification.
-- GitHub CLI login authorized. Render session is available. Public deployment
-  has not yet been completed; no public URL is claimed in this record.
+- Deployed Docker on Render Free in Singapore. Fixed HTTPS URL:
+  https://frame-video-workbench.onrender.com . Service ID:
+  `srv-dah7iuf40ujc73e0i600`. The unrelated pre-existing service was unchanged.
+- Render Billing showed Hobby, no card on file, $0.00 accrued/projected, and
+  5 GB monthly included bandwidth. No paid resource was created.
+- Public source repository was explicitly authorized by the user:
+  https://github.com/kk7-lry/frame-video-workbench . Only 36 release files
+  were uploaded; no task databases, platform credentials or media history.
+- Live public paste of https://www.w3schools.com/html/mov_bbb.mp4 downloaded
+  788,493 bytes. Linux FFmpeg decoded both sampled frames, reporting 320x176
+  and 10.026667 seconds. Browser playback advanced, canvas pixels were
+  nonblank, and saving `mov_bbb.mp4` completed without a download error.
+- A second fresh browser context saw zero tasks; direct access to the first
+  context's task and media returned HTTP 404.
+- Actual Linux Tesseract OCR ran on the Chinese image. The first sparse-text
+  mode fragmented the first line, so the final candidate uses block mode.
+  Recognition accuracy still requires human review; speech is not configured.
+- All three historical Douyin links were tested from the public server.
+  Video IDs were preserved, but the platform did not return a media URL.
+- Real subprocess startup exposed a Python `http` module name collision.
+  Fixed and covered by a process-level test that does not need live internet.
+- Windows thumbnail generation returned E_INVALIDARG on a real MP4 that
+  played in the browser. That specific thumbnail-only failure now preserves
+  the source with validation `unavailable`; corrupt tracks remain rejected.
 
 ## Previous Run
 

@@ -19,3 +19,9 @@ yt-dlp is invoked from an existing installation and is not redistributed here. W
 ## Adapter Research
 
 The installed yt-dlp Douyin and XiaoHongShu extractors and the user-provided Evil0ctal/Douyin_TikTok_Download_API source archive were inspected locally. The latter archive contains mixed per-file license notices, so its implementation and signature code are not bundled in this application. `link_resolver.py` uses Python's HTMLParser and JSON decoder to read public page metadata. Current upstream versions and live platform behavior could not be checked because the network approval service returned HTTP 503.
+# Public Container Tools
+
+The Linux image installs Debian packages for FFmpeg/ffprobe and Tesseract,
+including Chinese and English language data. Their package licenses remain
+with the Debian packages. yt-dlp is pinned in `requirements.txt`. No platform
+cookies, third-party videos or external recognition models are bundled.

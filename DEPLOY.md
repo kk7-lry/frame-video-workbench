@@ -4,6 +4,10 @@ This repository includes a Docker web service and a Render Free blueprint.
 Only public video sources are attempted. Platform availability and watermark
 absence must be checked against real videos; neither is guaranteed.
 
+Current deployment: https://frame-video-workbench.onrender.com
+Source: https://github.com/kk7-lry/frame-video-workbench
+Render service: `srv-dah7iuf40ujc73e0i600` (Free, Singapore).
+
 ## Zero-Cost Configuration
 
 - Use Render's Hobby workspace and the **Free** web-service compute plan.

@@ -35,8 +35,10 @@ function Await($Operation, [Type]$ResultType) {
     $task = $asyncMethod.MakeGenericMethod($ResultType).Invoke($null, @($Operation))
     $task.GetAwaiter().GetResult()
 }
+$stage='open'
 try {
     $file = Await ([Windows.Storage.StorageFile]::GetFileFromPathAsync($MediaPath)) ([Windows.Storage.StorageFile])
+    $stage='track'
     $clip = Await ([Windows.Media.Editing.MediaClip]::CreateFromFileAsync($file)) ([Windows.Media.Editing.MediaClip])
     $properties = $clip.GetVideoEncodingProperties()
     $duration = $clip.OriginalDuration.TotalSeconds
@@ -44,7 +46,9 @@ try {
     $composition = [Windows.Media.Editing.MediaComposition]::new()
     $compiled.CompiledAssembly.GetType('FrameVideoProbe').GetMethod('Add').Invoke($null, @($composition, $clip))
     foreach ($seconds in @(0.0, [Math]::Max(0, $duration - 0.2))) {
-        $image = Await ($composition.GetThumbnailAsync([TimeSpan]::FromSeconds($seconds), 160, 0, [Windows.Media.Editing.VideoFramePrecision]::NearestFrame)) ([Windows.Graphics.Imaging.ImageStream])
+        $stage='thumbnail'
+        $thumbnailHeight=[uint32][Math]::Max(1,[Math]::Round(160.0*$properties.Height/$properties.Width))
+        $image = Await ($composition.GetThumbnailAsync([TimeSpan]::FromSeconds($seconds), 160, $thumbnailHeight, [Windows.Media.Editing.VideoFramePrecision]::NearestFrame)) ([Windows.Graphics.Imaging.ImageStream])
         $bitmap = $null
         try {
             $decoder = Await ([Windows.Graphics.Imaging.BitmapDecoder]::CreateAsync($image)) ([Windows.Graphics.Imaging.BitmapDecoder])
@@ -54,5 +58,8 @@ try {
     }
     [Console]::Write((@{ok=$true; width=$properties.Width; height=$properties.Height; duration=$duration; decodedFrames=2} | ConvertTo-Json -Compress))
 } catch {
-    [Console]::Write((@{ok=$false; reason='media_decode_failed'} | ConvertTo-Json -Compress))
+    $cause = $_.Exception
+    while ($cause.InnerException) { $cause = $cause.InnerException }
+    $reason=if($stage -eq 'thumbnail' -and $cause.HResult -eq -2147024809){'thumbnail_unavailable'}else{'media_decode_failed'}
+    [Console]::Write((@{ok=$false; reason=$reason; code=$cause.HResult; stage=$stage} | ConvertTo-Json -Compress))
 }
