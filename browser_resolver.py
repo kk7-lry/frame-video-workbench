@@ -64,10 +64,14 @@ def resolve(url):
         process.communicate()
         return None
     if process.returncode:
+        print('Frame browser: child exit ' + str(process.returncode), flush=True)
         return None
     try:
         info = json.loads(output)
     except ValueError:
+        return None
+    if isinstance(info, dict) and info.get('_diagnostic'):
+        print('Frame browser: ' + json.dumps(info['_diagnostic'], ensure_ascii=True), flush=True)
         return None
     return info if isinstance(info, dict) and info.get('id') == target[1] and info.get('formats') else None
 
@@ -78,6 +82,7 @@ def browse(video_id):
     from playwright.sync_api import sync_playwright
 
     found = []
+    diagnostic = {'detailResponses': 0, 'phase': 'launch'}
     validated = set()
     deadline = time.monotonic() + 45
     with sync_playwright() as playwright:
@@ -111,11 +116,14 @@ def browse(video_id):
 
             context.route('**/*', route_request)
             page = context.new_page()
+            diagnostic['phase'] = 'navigate'
 
             def response_seen(response):
                 parts = urlsplit(response.url)
                 if parts.hostname != 'www.douyin.com' or parts.path != '/aweme/v1/web/aweme/detail/':
                     return
+                diagnostic['detailResponses'] += 1
+                diagnostic['detailStatus'] = response.status
                 try:
                     if int(response.headers.get('content-length') or 0) > link_resolver.PAGE_LIMIT:
                         return
@@ -128,15 +136,27 @@ def browse(video_id):
                     pass
 
             page.on('response', response_seen)
-            with contextlib.suppress(Exception):
+            try:
                 page.goto('https://www.douyin.com/video/' + video_id,
                           wait_until='domcontentloaded', timeout=25000)
+                diagnostic['phase'] = 'wait-detail'
                 while not found and time.monotonic() < deadline:
                     page.wait_for_timeout(250)
-            return found[0] if found else None
+            except Exception as error:
+                diagnostic['error'] = str(error).splitlines()[0][:180]
+            if found:
+                return found[0]
+            with contextlib.suppress(Exception):
+                diagnostic['title'] = page.title()[:100]
+                diagnostic['host'] = urlsplit(page.url).hostname
+            return {'_diagnostic': diagnostic}
         finally:
             browser.close()
 
 
 if __name__ == '__main__':
-    print(json.dumps(browse(sys.argv[1]), ensure_ascii=True))
+    try:
+        result = browse(sys.argv[1])
+    except Exception as error:
+        result = {'_diagnostic': {'phase': 'runtime', 'error': str(error).splitlines()[0][:180]}}
+    print(json.dumps(result, ensure_ascii=True))
