@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: frame-video-workbench
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /healthz
+    envVars:
+      - key: FRAME_PUBLIC
+        value: "1"
+      - key: FRAME_DATA
+        value: /tmp/frame-public
+      - key: PORT
+        value: "10000"

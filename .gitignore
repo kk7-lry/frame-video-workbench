@@ -1,0 +1,10 @@
+data/
+data-public/
+.venv/
+__pycache__/
+*.pyc
+*.log
+.env
+.env.*
+artifacts/
+node_modules/
