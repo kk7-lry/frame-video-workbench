@@ -60,6 +60,18 @@ Linux containers include FFmpeg, ffprobe and Tesseract Chinese/English OCR.
 No paid APIs or speech-model downloads run automatically. Speech recognition
 is unavailable in the current Linux container and is shown as unavailable.
 
+`FRAME_BROWSER=1` enables a disposable anonymous Chromium fallback for Douyin
+video pages. It only accepts the requested video ID from the official detail
+response. It blocks media, images, fonts, stylesheets, WebSockets and hosts
+outside the platform resource allowlist, and checks resource DNS addresses.
+Unlike the media downloader, Chromium performs its own final DNS connection;
+the allowlist therefore only includes platform-controlled domains. Each
+attempt has a 45-second page deadline and a 65-second subprocess limit.
+On Linux the timeout kills the process group, including Chromium children.
+The single existing worker bounds concurrency to one browser attempt. No
+visitor browser cookies, shared login or paid parsing service are used.
+Set `FRAME_BROWSER=0` to disable the fallback on a constrained host.
+
 ## Local Public-Mode Preview
 
 ```powershell

@@ -6,6 +6,7 @@
 !platform_auth.py
 !public_access.py
 !media_tools.py
+!browser_resolver.py
 !index.html
 !app.js
 !style.css

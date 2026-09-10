@@ -2,6 +2,12 @@
 
 ## Current Run: 2026-09-10
 
+- Follow-up: the user supplied `https://v.douyin.com/aIT_UPmda4E/`, video ID
+  `7681497975500538874`. A fresh anonymous headless Edge context received the
+  official detail response with the expected title and duration 77.5 seconds.
+  Added an opt-in isolated Chromium fallback. Cloud download acceptance for
+  this fallback is pending; earlier tests below describe the previous build.
+
 - 80 backend tests and nine frontend state tests passed, no skips/failures.
 - Static frontend check passed with 100 unique element/icon IDs.
 - Real browser on local public mode: uploaded 92,979-byte MP4, decoded and

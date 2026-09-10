@@ -33,6 +33,7 @@ import link_resolver
 import platform_auth
 import public_access
 import media_tools
+import browser_resolver
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -436,6 +437,12 @@ def run_download(tid):
             page_error=error
         if task['platform']=='抖音' and link_resolver.douyin_id(resolve_url) and not link_resolver.douyin_id(final_url):
             final_url=resolve_url
+        if not info.get('formats') and task['platform']=='抖音' and browser_resolver.enabled():
+            stage='读取公开播放页'
+            save(tid,failedStage='',progress=0)
+            browser_info=browser_resolver.resolve(final_url)
+            if browser_info:
+                info=browser_info
         if not info.get('formats'):
             if info.get('is_landing_page'):
                 # Clear metadata written by earlier versions before they learned to

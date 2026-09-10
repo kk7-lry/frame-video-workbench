@@ -25,3 +25,7 @@ The Linux image installs Debian packages for FFmpeg/ffprobe and Tesseract,
 including Chinese and English language data. Their package licenses remain
 with the Debian packages. yt-dlp is pinned in `requirements.txt`. No platform
 cookies, third-party videos or external recognition models are bundled.
+
+The container also installs Debian Chromium and Playwright (Apache-2.0) to
+load anonymous public Douyin video pages. Licenses remain in the installed
+packages. No third-party signature implementation is copied into this project.

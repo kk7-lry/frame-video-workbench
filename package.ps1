@@ -5,6 +5,7 @@ $files=@('index.html','app.js','style.css','favicon.svg','server.py','link_resol
 $files += @('ACCEPTANCE.md','native_video.ps1','tests/fixtures/sample.mp4','tests/build_media_fixture.ps1')
 $files += @('tests/test_startup.py','tests/test_frontend.cjs')
 $files += @('public_access.py','media_tools.py','Dockerfile','.dockerignore','.gitignore','requirements.txt','render.yaml','DEPLOY.md','tests/test_public.py','tests/test_media_tools.py')
+$files += @('browser_resolver.py','tests/test_browser_resolver.py')
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $stream=[IO.File]::Open($destination,[IO.FileMode]::Create)
